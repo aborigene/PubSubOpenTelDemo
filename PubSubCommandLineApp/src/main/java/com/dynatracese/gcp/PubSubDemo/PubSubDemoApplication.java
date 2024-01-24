@@ -25,13 +25,18 @@ import org.springframework.stereotype.Service;
 //import brave.Tracer;
 import brave.Tracer.SpanInScope;
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import io.opentelemetry.context.Scope;
+import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import io.opentelemetry.sdk.resources.Resource;
@@ -39,21 +44,29 @@ import io.opentelemetry.sdk.trace.*;
 import java.util.HashMap;
 //import io.opentelemetry.instrumentation.log4j.appender.v2_17.OpenTelemetryAppender;
 
-
 @SpringBootApplication
 public class PubSubDemoApplication {
 	private static Tracer tracer;
+
 	public static void main(String[] args) {
 		tracer = GlobalOpenTelemetry
 			.getTracerProvider()
+			//.setPropagators(ContextPropagators.create(TextMapPropagator.composite(W3CTraceContextPropagator.getInstance(), W3CBaggagePropagator.getInstance())))
 			.tracerBuilder("PubSubDemo") //TODO Replace with the name of your tracer
 			.build();
+		// SpringApplication.run(PubSubDemoApplication.class, args);
 		
-    	String subscriptionName = "projects/sales-engineering-latam/subscriptions/price-sub";
-		String topicName = "projects/sales-engineering-latam/topics/price-topic";
+    	String subscriptionName;// = "projects/sales-engineering-latam/subscriptions/price-sub";
+		String topicName;// = "projects/sales-engineering-latam/topics/price-topic";
 		
 		//SpringApplication.run(PubSubDemoApplication.class, args);
 		if (args[0].equals("-p")){
+			topicName = System.getenv("TOPIC_NAME");
+			if (topicName == "") {
+				System.out.println("TOPIC_NAME environment variable has not been defined, please set that and restart the program.");
+				System.exit(-1);
+			}
+			System.out.println("This app is part of the lab on PubSub demonstration. The -p is used to publish messages, this option works but is deprecated, in favor of the other app PubSubOteldemoApplication. Please generate the messages on that application.");
 			while (true){
 				try{
 					publisherExample(topicName);
@@ -65,6 +78,11 @@ public class PubSubDemoApplication {
 			}
 		}
 		if (args[0].equals("-s")){
+			subscriptionName = System.getenv("SUBSCRIPTION_NAME");
+			if (subscriptionName == null) {
+				System.out.println("SUBSCRIPTION_NAME environment variable has not been defined, please set that and restart the program.");
+				System.exit(-1);
+			}
 			subscribeAsyncExample(subscriptionName);
 		}
 		if (args[0].equals(null)){
@@ -102,19 +120,24 @@ public class PubSubDemoApplication {
 	public static void publisherExample(String topicName) throws IOException, ExecutionException, InterruptedException {
 		//TopicName topicName = TopicName.of(projectId, topicId);
 		//nextSpan().name("Pub "+topicName).start();
-		Span span = tracer.spanBuilder("Publish price-topic").startSpan();//TODO COLLECT THE RIGHT NAME FROM THE TOPIC NAME
+		System.out.println(GlobalOpenTelemetry.getPropagators());
+		Span span = tracer.spanBuilder("Publish price-topic").setSpanKind(SpanKind.PRODUCER).startSpan();//TODO COLLECT THE RIGHT NAME FROM THE TOPIC NAME
 		// Set demo span attributes using semantic naming
 		span.setAttribute("pupsub.action", "Publish");
 
 		try (Scope scope = span.makeCurrent()){
 			Publisher publisher = null;
 			try {
-				
+				System.out.println("Producer scope: "+scope.toString());
 				// Create a publisher instance with default settings bound to the topic
 				publisher = Publisher.newBuilder(topicName).build();
 				HashMap<String, String> attributes = new HashMap<String, String>();
+				attributes.put("test", "test value");
+				System.out.println("Attributes before: "+attributes);
 				GlobalOpenTelemetry.getPropagators().getTextMapPropagator().inject(Context.current(), attributes, setter);
-
+				//GlobalOpenTelemetry.
+				System.out.println("Attributes after: " + attributes);
+				System.out.println("Attributes after: " + attributes.get("traceparent"));
 				
 
 				String message = "Hello World!";
@@ -150,8 +173,8 @@ public class PubSubDemoApplication {
         			.extract(Context.current(), new HashMap<String, String>(message.getAttributesMap()), getter);
 
 				try (Scope scope = extractedContext.makeCurrent()) {
-					System.out.println(extractedContext.toString());
-					Span span = tracer.spanBuilder("Sub price-sub").startSpan();//TODO COLLECT THE RIGHT NAME FROM THE TOPIC NAME
+					System.out.println("Current context: "+extractedContext.toString());
+					Span span = tracer.spanBuilder("Sub price-sub").setSpanKind(SpanKind.CONSUMER).startSpan();//TODO COLLECT THE RIGHT NAME FROM THE TOPIC NAME
 					// Set demo span attributes using semantic naming
 					span.setAttribute("pupsub.action", "Subscribe");
 					// Handle incoming message, then ack the received message.
@@ -172,7 +195,7 @@ public class PubSubDemoApplication {
 			subscriber.startAsync().awaitRunning();
 			System.out.printf("Listening for messages on %s:\n", subscriptionName.toString());
 			// Allow the subscriber to run for 30s unless an unrecoverable error occurs.
-			subscriber.awaitTerminated(30, TimeUnit.SECONDS);
+			subscriber.awaitTerminated(300, TimeUnit.SECONDS);
 		} 
 		catch (TimeoutException timeoutException) {
 			// Shut down the subscriber after 30s. Stop receiving messages.
