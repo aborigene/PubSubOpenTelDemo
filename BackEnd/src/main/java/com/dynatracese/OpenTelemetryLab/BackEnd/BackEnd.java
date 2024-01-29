@@ -1,4 +1,4 @@
-package com.dynatracese.PubSubAPI.pubsubOTELdemo;
+package com.dynatracese.OpenTelemetryLab.BackEnd;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,7 +9,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 
 @SpringBootApplication
-public class PubsubOteLdemoApplication {
+public class BackEnd {
 	private static Tracer tracer;
 	public static void main(String[] args) {
 		String topicName = System.getenv("TOPIC_NAME");

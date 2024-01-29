@@ -1,4 +1,4 @@
-package com.dynatracese.PubSubAPI.pubsubOTELdemo;
+package com.dynatracese.OpenTelemetryLab.BackEnd;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -13,7 +13,7 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.trace.Tracer;
 
 @RestController
-public class PubController {
+public class BackEndController {
     private static final String template = "Response: %s";
 	private static final String message_template = "This is the messge: %s!";
 	private final AtomicLong counter = new AtomicLong();
@@ -27,8 +27,8 @@ public class PubController {
             subscriptionName);
     
     @Autowired
-    PubController(OpenTelemetry openTelemetry) {
-        tracer = openTelemetry.getTracer(PubController.class.getName(), "0.1.0");
+    BackEndController(OpenTelemetry openTelemetry) {
+        tracer = openTelemetry.getTracer(PubController.BackEndControllerss.getName(), "0.1.0");
     }
 
 

@@ -1,4 +1,4 @@
-package com.dynatracese.gcp.PubSubDemo;
+package com.dynatracese.OpenTelemetryLab.Middleware;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

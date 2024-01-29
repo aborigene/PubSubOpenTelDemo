@@ -37,36 +37,60 @@ When this labs refers to instrumentaion as "pure OpenTel" it means that the trac
 
 ### How to build this lab
 
-1. Compile the command line app
-    1. ```cd PubSubCommandLineApp```
+This lab can be run on a command line of any server/station running OneAgent or it can be deployed to a Kubernetes environment and executed from there, if you want to run this on Kubernetes, proceed to next session.
+
+#### Build from the commmand line
+
+The commands below show how to build the applications on the command line:
+
+1. Compile the Middlware
+    1. ```cd Middleware```
     2. ```./mvnw clean package -DskipTests```
     3. Edit the file `start.sh`, to add the values of your TOPIC_NAME and SUBSCRIPTION_NAME variables
-2. Compile the controller app
-    1. ```cd pubsubOTELdemo```
-    2. ```./mvn2 clean package -DskipTests```
+2. Compile the FrontEnd
+    1. ```cd FrontEnd```
+    2. ```./mvnw clean package -DskipTests```
     3. Edit the file `start.sh`, to add the values of your TOPIC_NAME and SUBSCRIPTION_NAME variables
+3. Compile the FrontEnd
+    1. ```cd BackEnd```
+    2. ```./mvnw clean package -DskipTests```
+
+#### Build images and publish to a repo
+
+<TODO>
 
 ### How to run this lab
 
-1. Open two separate terminals
+#### Running from the command line
+
+1. Open four separate terminals
 2. On the first one
-    1. ```cd PubSubCommandLineApp```
+    1. ```cd Middleware```
     2. ```./start.sh```
-    3. This commando will run for 5 minutes receiving messages, when this finishes you can restart to continue consuming messages
+    3. This command will run for 5 minutes receiving messages, when this finishes you can restart to continue consuming messages
 3. On the second one
-    1. ```cd pubsubOTELdemo```
+    1. ```cd FrontEnd```
     2. ```./start.sh```
 4. Open a third terminal
-    1. ```curl 127.0.0.1:8080//pubSomething?message=MySuperTest```
+    1. ```cd BackEnd```
+    2. ```./start.sh```
+4. Open a fourth terminal
+    1. ```curl 127.0.0.1:8080/pubSomething?message=MySuperTest```
     2. This will produce a message, repeat this step as many times as required to produce more messages
+
+#### Deploying to Kubernetes
+
+<TODO>
 
 ### What is important on this lab
 
-Context propagation. In order for a trace to be connected from the producer side to the consumer side, the context needs to be propagated. On the code you can see there are two functions ```setter``` and ```getter```, these functions are called by OpenTelemetry API to set and retrieve the context.
+#### Context propagation
 
-So on the producer side, a HashMap is created, filled with the right context parameters and added to the message. When the messages is sent to PubSub, this parameters carry the context to the consumer side.
+In order for a trace to be connected from the producer side to the consumer side, the context needs to be propagated. On the code you can see there are two functions ```setter``` and ```getter```, these functions are called by OpenTelemetry API to set and retrieve the context.
 
-On the consumer side, at the moment the message ir read, the ```getter``` function is used to extract the context and set the current scope.
+So on the producer side, a HashMap is created, than filled with the right context parameters and added to the message. When the messages is sent to PubSub, this parameters carry the context to the consumer side.
+
+On the consumer side, at the moment the message is read, the ```getter``` function is used to extract the context and set the current scope. This will allow the traces from this two separated services to be connected together on Dynatrace.
 
 ### How this can be sent on Dynatrace? 
 

@@ -1,4 +1,4 @@
-package com.dynatracese.PubSubAPI.pubsubOTELdemo;
+package com.dynatracese.OpenTelemetryLab.FrontEnd;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
