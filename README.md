@@ -1,9 +1,39 @@
 ### What is this lab
 
-This is a simple example on how to use OpenTelemetry and Google PubSub managed services through java.
-This lab is composed of two applications:
-1. Spring Controller that receives a GET and publishes a message to a TOPIC
-2. A command line app that subscribes to a SUBSCRIPTION, and process all messages available.
+This is a simple application that will be used to demonstrate the usage of OpenTelemetry + Dynatrace. The focus of this lab is to cover some important concepts on OpenTel, and provide examples on how to use it with Dynatrace.
+The application on this lab is composed of 3 microservices:
+1. FrontEnd publisher
+2. Middleware consumer
+3. Backend database
+
+These are Java microservices that talk to each other either through HTTP or through a PubSub GCP Topic. This is important so we can cover
+1. HTTP autoinstrumentation using OpenTel
+2. Context propagation on GPC PubSub.
+
+This lab will also be composed of 3 scenarios:
+1. OneAgent + OpentTel:
+    1. FrontEnd instrumented with OneAgent, OpenTel just for PubSub integration
+    2. Middleware instrumented with OneAgent, OpenTel just for PubSub integration
+    3. Backend instrumented purely with OneAgent
+2. OneAgent + Pure OpenTel
+    1. FrontEnd instrumented with OneAgent, OpenTel just for PubSub integration
+    2. Middleware instrumented with just OpenTel, no OneAgent for trace recollection. OpenTel used for PubSub integration.
+    3. Backend instrumented purely with OneAgent
+3. Pure OpenTel
+    1. FrontEnd entirely instrumented with OpenTel
+    2. Middleware entirely instrumented with OpenTel
+    3. Backend entirely instrumented with OpenTel
+    
+When this labs refers to instrumentaion as "pure OpenTel" it means that the traces will be sent to the Dynatrace OTLP endpoint, either directly or through the usage of an OpenTelemetry collector.
+
+### Pre Requisites
+
+1. A Dynatrace tenant, if you don't have one you can start your free trial [here](https://www.dynatrace.com/trial).
+2. A OTLP ingest token to the tenant.
+    1. Go to Accesst tokens -> Generate new token
+    2. Define a name for your token and choose the scope to be "Ingest logs", "Ingest metrics" and "Ingest OpenTelemetry traces"
+3. GCP ADC configuration so the applications can reach your GCP project, [here](https://cloud.google.com/docs/authentication/application-default-credentials)
+4. PubSub topic an subscription
 
 ### How to build this lab
 
