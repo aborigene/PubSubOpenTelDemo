@@ -12,13 +12,7 @@ import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 public class BackEnd {
 	private static Tracer tracer;
 	public static void main(String[] args) {
-		String topicName = System.getenv("TOPIC_NAME");
-		String subscriptionName = System.getenv("SUBSCRIPTION_NAME");
-		if ((topicName == null) || (subscriptionName == null)){
-			System.out.println("TOPIC_NAME or SUBSCRIPTION_NAME variable not properly set, please set those variables and restart the application.");
-			System.exit(-1);
-		}
-		SpringApplication.run(PubsubOteLdemoApplication.class, args);
+		SpringApplication.run(BackEnd.class, args);
 	}
 
 	@Bean

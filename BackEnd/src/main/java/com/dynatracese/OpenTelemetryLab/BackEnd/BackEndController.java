@@ -33,16 +33,31 @@ public class BackEndController {
 
 
     @CrossOrigin(origins = "*")
-	@GetMapping("/pubSomething")
-	public String publish(@RequestParam(value = "message", defaultValue = "Hello World!") String message){
-		UUID uuid = UUID.randomUUID();
+	@PostMapping("/storePriceChange")
+	public String publish(@RequestBody PriceUpdate newPrice){
+		String message = "";
+        UUID uuid = UUID.randomUUID();
         try{
-            pubSubHelper.publisherExample(message);
+            //TODO: store this on a database
+            message = "Successfully stored to database";
         }
         catch(Exception ex){
-            message = "There was an error publishing, the message '"+message+"' has not been sent.\n"+ex.getMessage();
+            message = "There was an error writing to the database, the price has not been updated.\n"+ex.getMessage();
         }
-		System.out.println(String.format(template, message));
+		return uuid+" - "+message;
+	}
+
+    @CrossOrigin(origins = "*")
+	@GetMapping("/getUpdatedPrice")
+	public String publish(@RequestParam String requestId){
+		String message = "";
+        try{
+            //TODO: select from the database
+            message = "{\"price\":\"10\"}";
+        }
+        catch(Exception ex){
+            message = "There was an error getting the price from the database.\n"+ex.getMessage();
+        }
 		return uuid+" - "+message;
 	}
     
